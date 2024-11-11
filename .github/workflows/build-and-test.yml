@@ -11,7 +11,7 @@ on:
       - 'master' # This ensures the workflow also runs when merging
     paths:
       - 'app/**' # Only run if our push contains a file in the app folder
-  
+
   workflow_dispatch:  # Allows manual triggering of the workflow.
 
 permissions:
@@ -19,15 +19,15 @@ permissions:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  SVC_ACCOUNT: ${{ secrets.GCP_SVC_ACCOUNT }}
-  GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/${{ secrets.GCP_SVC_ACCOUNT }}.json
-  SVC_ACCOUNT_EMAIL: ${{ secrets.GCP_SVC_ACCOUNT }}@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
-  REGION: ${{ vars.GCP_REGION }} 
+  SVC_ACCOUNT: ${{ secrets.GCP_GH_SVC_ACCOUNT }}
+  GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/${{ secrets.GCP_GH_SVC_ACCOUNT }}.json
+  SVC_ACCOUNT_EMAIL: ${{ secrets.GCP_GH_SVC_ACCOUNT }}@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+  REGION: ${{ vars.GCP_REGION }}
   FUNCTIONS_PORT: ${{ vars.GCP_DEV_FUNCTIONS_PORT}}
   FLASK_RUN_PORT: ${{ vars.FLASK_RUN_PORT }}
   BACKEND_GCF: https://${{ vars.GCP_REGION }}-${{ secrets.GCP_PROJECT_ID }}.${{ vars.GCP_FUNCTION_URI_SUFFIX }}
 
-jobs: 
+jobs:
   build_and_test:
     runs-on: ubuntu-latest
 
@@ -52,12 +52,12 @@ jobs:
         echo GOOGLE_APPLICATION_CREDENTIALS="$GOOGLE_APPLICATION_CREDENTIALS"
         echo BACKEND_GCF="$BACKEND_GCF"
         echo FUNCTIONS_PORT="$FUNCTIONS_PORT"
-        echo FLASK_RUN_PORT="$FLASK_RUN_PORT"    
-    
+        echo FLASK_RUN_PORT="$FLASK_RUN_PORT"
+
     # Creates a credentials file that will be used for ADC later
     - name: Create credentials file
       run: |
-        echo "${{ secrets.GCP_SVC_ACCOUNT_CREDS }}" | base64 --decode > $GOOGLE_APPLICATION_CREDENTIALS
+        echo "${{ secrets.GCP_GH_SVC_ACCOUNT_CREDS }}" | base64 --decode > $GOOGLE_APPLICATION_CREDENTIALS
         echo "Checking the credentials:"
         head -n 3 $GOOGLE_APPLICATION_CREDENTIALS
       shell: bash
@@ -66,15 +66,15 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: "3.10"
-        cache: 'pip' # caching pip dependencies        
-        
+        cache: 'pip' # caching pip dependencies
+
     - name: Install dependencies
       run: |
         echo "Installing Python dependencies"
         python -m pip install --upgrade pip
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        
+
     - name: Lint with flake8
       working-directory: ${{ matrix.app-folder }}
       run: |
@@ -86,8 +86,8 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
         echo "Flake8 exit code: $?"
-        
+
     - name: Test with pytest
-      working-directory: ${{ matrix.app-folder }}    
+      working-directory: ${{ matrix.app-folder }}
       run: |
         pytest || if [ $? -eq 5 ]; then echo "No tests were found, but continuing..."; else exit 1; fi
