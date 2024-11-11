@@ -29,6 +29,7 @@ proto-plus==1.23.0
 protobuf==4.25.3
 pyasn1==0.6.0
 pyasn1_modules==0.4.0
+pytest
 requests==2.32.3
 rsa==4.9
 urllib3==2.2.1
