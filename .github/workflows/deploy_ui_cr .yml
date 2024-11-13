@@ -1,5 +1,5 @@
 name: Deploy to Cloud Run
-run-name: ${{ github.actor }} launched the Deploy workflow 🚀
+run-name: ${{ github.actor }} launched the Deploy to Cloud Run workflow 🚀
 on:
   workflow_run:
     workflows: ["Build and Test"] # Run the deploy after successful Build and Test
